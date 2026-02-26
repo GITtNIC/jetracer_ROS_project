@@ -53,13 +53,13 @@ class image_converter:
 
   def onMouse(self,event, x,y,flags,param):
     if event == cv.EVENT_LBUTTONDOWN:
-	self.drawing = True
-	self.xy[0]=(x,y)
+        self.drawing = True
+        self.xy[0]=(x,y)
     elif event == cv.EVENT_MOUSEMOVE:
-	self.xy[1]=(x,y)
+        self.xy[1]=(x,y)
     elif event == cv.EVENT_LBUTTONUP:
-	self.drawing = False
-	self.setcolor = True
+        self.drawing = False
+        self.setcolor = True
 
 
   def callback(self,data):
@@ -91,15 +91,15 @@ class image_converter:
         else:V_min -= 20
         S_max = 255;V_max = 255
 
-	config = {'Hmin': H_min, 'Hmax': H_max,
-		'Smin': S_min, 'Smax': S_max,
-		'Vmin': V_min, 'Vmax': V_max}
-	self.client.update_configuration(config)
+        config = {'Hmin': H_min, 'Hmax': H_max,
+            'Smin': S_min, 'Smax': S_max,
+            'Vmin': V_min, 'Vmax': V_max}
+        self.client.update_configuration(config)
 
         self.lower=np.array([H_min,S_min,V_min])
         self.upper=np.array([H_max,S_max,V_max])
       except:
-	print("The color cannot be selected normally")
+        print("The color cannot be selected normally")
       self.setcolor = False
 
     else:
@@ -112,7 +112,7 @@ class image_converter:
 
       # Bitwise-AND mask and original image
       res = cv.bitwise_and(cv_image,cv_image, mask= mask)
-	
+
       # Convert the image to grayscale
       gray_img = cv.cvtColor(res, cv.COLOR_RGB2GRAY)
 
@@ -122,36 +122,36 @@ class image_converter:
       contours, hierarchy = cv.findContours(binary, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
       if len(contours) != 0:
-	areas = [];
-	for c in contours: areas.append(cv.contourArea(c))
+        areas = [];
+        for c in contours: areas.append(cv.contourArea(c))
         cnt = contours[areas.index(max(areas))]
-	if(cv.contourArea(cnt) > 50):
+        if(cv.contourArea(cnt) > 50):
             rect = cv.minAreaRect(cnt)
             box = cv.boxPoints(rect)
             box = np.int0(box)
             cv.drawContours(cv_image, [box], 0, (0, 255, 0), 2)
 
-	    (cx,cy),radius = cv.minEnclosingCircle(cnt)
-	    x = int(cx)
-	    y = int(cy)
+            (cx,cy),radius = cv.minEnclosingCircle(cnt)
+            x = int(cx)
+            y = int(cy)
             cv.line(cv_image,(x-10,y),(x+10,y),(255,0,0),2)
             cv.line(cv_image,(x,y-10),(x,y+10),(255,0,0),2)
             cv.line(cv_image,(width/2,height),(x,y),(255,0,0),2)
 
             err = (width/2 - x)/float((height - y))
-	
+
             self.cmd.angular.z = (self.kp*err + self.kd*(err - self.last_err))*0.01;
             if(self.cmd.angular.z > self.Max):self.cmd.angular.z = self.Max
             elif(self.cmd.angular.z < -self.Max):self.cmd.angular.z = -self.Max
 
             if(self.switch):
-	        self.cmd_pub.publish(self.cmd)
+                self.cmd_pub.publish(self.cmd)
             else:
-	        self.cmd_pub.publish(Twist())
-	else:
-	    self.cmd_pub.publish(Twist())
+                self.cmd_pub.publish(Twist())
+        else:
+            self.cmd_pub.publish(Twist())
       else:
-	  self.cmd_pub.publish(Twist())
+          self.cmd_pub.publish(Twist())
 
       #cv.imshow("Color mask", mask)
       cv.imshow("Color Tracking", res)
@@ -184,4 +184,3 @@ def main(args):
 
 if __name__ == '__main__':
     main(sys.argv)
-
