@@ -28,16 +28,13 @@ class Teleop:
     def callback(self, data):
         """ Receive joystick data, formulate String message. """
 
-        if data.buttons[6] == 1: 
+        if data.buttons[6] == 1:
             self.cmd.linear.x = self.x_speed * data.axes[3];
             self.cmd.angular.z = self.w_speed * data.axes[0];
             self.cmd_pub.publish(self.cmd)
             self.active = 1
         else:
-            self.cmd = Twist()
-            self.cmd.linear.x = 0;
-            self.cmd.angular.z = 0;
-            self.cmd_pub.publish(self.cmd)
+            # Don't publish when inactive - allows line_follow to control
             self.active = 0
 
 if __name__ == "__main__": Teleop()
