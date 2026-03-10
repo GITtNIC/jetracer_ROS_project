@@ -28,7 +28,7 @@ class Teleop:
     def callback(self, data):
         """ Receive joystick data, formulate String message. """
 
-        if data.buttons[6] == 1:
+        if data.buttons[4] == 1:
             self.cmd.linear.x = self.x_speed * data.axes[3];
             self.cmd.angular.z = self.w_speed * data.axes[0];
             self.cmd_pub.publish(self.cmd)
