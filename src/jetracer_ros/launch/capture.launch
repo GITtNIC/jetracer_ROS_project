@@ -9,10 +9,10 @@
   <arg name="sample_rate" default="16000"/>
   <arg name="format" default="mp3"/>
   <arg name="sample_format" default="S16LE"/>
-  <arg name="ns" default="jetracer_audio_in"/>
+  <arg name="ns" default="jetracer_audio_out"/>
 
   <group ns="$(arg ns)">
-    <node name="audio_capture" pkg="audio_capture" type="audio_capture" output="screen">
+    <node name="jetracer_audio_capture" pkg="audio_capture" type="audio_capture" output="screen">
       <param name="bitrate" value="$(arg bitrate)"/>
       <param name="device" value="$(arg device)"/>
       <param name="channels" value="$(arg channels)"/>
