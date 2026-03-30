@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<launch>
+  <!--
+    Line following launch file.
+
+    Modes:
+      simple - Uses line_detector_node.py (threshold-based)
+      hough  - Uses line_detector_hough_node.py (Hough transform)
+
+    Usage:
+      roslaunch jetracer master.launch
+      roslaunch jetracer master.launch mode:=hough
+  -->
+
+  <arg name="mode" default="simple" doc="simple or hough"/>
+
+  <!-- Start camera -->
+  <include file="$(find jetracer)/launch/csi_camera.launch"/>
+
+  <!-- Start motors -->
+  <include file="$(find jetracer)/launch/jetracer.launch"/>
+
+  <!-- Mode: simple (threshold-based) -->
+  <group if="$(eval arg('mode') == 'simple')">
+    <node pkg="jetracer" type="line_detector_node.py" name="line_detector" output="screen"/>
+  </group>
+
+  <!-- Mode: hough (Hough transform) -->
+  <group if="$(eval arg('mode') == 'hough')">
+    <node pkg="jetracer" type="line_detector_hough_node.py" name="line_detector" output="screen"/>
+  </group>
+
+  <!-- Controller (same for both modes) -->
+  <node pkg="jetracer" type="line_controller_node.py" name="line_controller" output="screen"/>
+
+</launch>
