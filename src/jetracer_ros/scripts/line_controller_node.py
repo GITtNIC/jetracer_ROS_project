@@ -11,9 +11,10 @@ class LineControllerNode:
     def __init__(self):
         rospy.init_node('line_controller_node')
 
-        self.kp = rospy.get_param('~kp', 0.8)
-        self.max_angular = rospy.get_param('~max_angular', 1.0)
-        self.forward_speed = rospy.get_param('~forward_speed', 0.0)
+        self.kp = rospy.get_param('~kp', 1.0)
+        self.max_angular = rospy.get_param('~max_angular', 0.6)
+        self.forward_speed = rospy.get_param('~forward_speed', 0.05)
+        self.deadband = rospy.get_param('~deadband', 8.0)
 
         self.cmd_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
 
@@ -30,12 +31,16 @@ class LineControllerNode:
         try:
             line_hpos = msg.data
 
+            # Deadband around image center
+            if abs(line_hpos) < self.deadband:
+                line_hpos = 0.0
+
             # Convert from [-100, 100] to about [-1, 1]
             error = line_hpos / 100.0
 
             angular_z = self.kp * error
 
-            # Clamp value
+            # Clamp steering command
             if angular_z > self.max_angular:
                 angular_z = self.max_angular
             elif angular_z < -self.max_angular:
@@ -49,8 +54,8 @@ class LineControllerNode:
 
             rospy.loginfo_throttle(
                 1,
-                "line_hpos=%.2f | error=%.2f | cmd.linear.x=%.2f | cmd.angular.z=%.2f",
-                line_hpos,
+                "line_hpos=%.2f | error=%.2f | linear=%.2f | angular=%.2f",
+                msg.data,
                 error,
                 cmd.linear.x,
                 cmd.angular.z
