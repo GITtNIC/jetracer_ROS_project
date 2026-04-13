@@ -1,0 +1,15 @@
+<launch>
+    <node pkg="jetracer" type="edge_trajectory_detector_node.py" name="edge_trajectory_detector_node" output="screen">
+        <param name="canny_low" value="50" />
+        <param name="canny_high" value="150" />
+        <param name="lane_width" value="300" />
+    </node>
+
+    <node pkg="jetracer" type="line_controller_node.py" name="line_controller_node" output="screen">
+        <param name="kp" value="1.0" />
+        <param name="max_angular" value="0.6" />
+        <param name="forward_speed" value="0.05" />
+        <param name="deadband" value="8.0" />
+    </node>
+
+</launch>
