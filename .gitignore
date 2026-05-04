@@ -1,4 +1,6 @@
-build/
-devel/
-.catkin_workspace
-CATKIN_IGNORE
+# macOS junk
+.DS_Store
+._*
+
+# Local-only safety backups for calibration files
+*.orig

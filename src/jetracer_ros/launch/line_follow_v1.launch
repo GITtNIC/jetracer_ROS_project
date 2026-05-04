@@ -1,0 +1,82 @@
+<launch>
+    <!--
+        v1 PID line follower.
+
+        All controller parameters are exposed as <arg> so you can tune
+        from the command line without editing the launch file, e.g.:
+
+            roslaunch jetracer line_follow_v1.launch kp:=0.4 forward_speed:=0.10
+            roslaunch jetracer line_follow_v1.launch kp:=0.0 forward_speed:=0.15
+                (kp=0 means no steering feedback, drives straight with
+                the servo at mechanical center. Useful for trim/sanity tests.)
+            roslaunch jetracer line_follow_v1.launch record_camera:=false
+
+        Bags land in $HOME/bags/ with timestamped filenames
+        (linefollow_v1_YYYY-MM-DD-HH-MM-SS.bag).
+    -->
+
+    <!-- ===== Bag recording ===== -->
+    <arg name="record"        default="true"/>
+    <arg name="record_camera" default="true"/>
+
+    <!-- ===== Perception ===== -->
+    <arg name="canny_low"       default="50"/>
+    <arg name="canny_high"      default="150"/>
+    <arg name="hough_threshold" default="30"/>
+    <arg name="hough_min_len"   default="20"/>
+    <arg name="hough_max_gap"   default="10"/>
+    <arg name="min_abs_slope"   default="0.3"/>
+    <arg name="min_segs"        default="3"/>
+    <arg name="roi_top"         default="0.6"/>
+    <arg name="blur_ksize"      default="5"/>
+
+    <!-- ===== Control ===== -->
+    <arg name="kp"             default="1.0"/>
+    <arg name="ki"             default="0.0"/>
+    <arg name="kd"             default="0.0"/>
+    <arg name="max_angular"    default="0.6"/>
+    <arg name="d_alpha"        default="0.3"/>
+    <arg name="forward_speed"  default="0.10"/>
+    <arg name="dt_min"         default="0.005"/>
+    <arg name="dt_max"         default="0.2"/>
+    <arg name="timeout"        default="0.5"/>
+
+    <group if="$(arg record)">
+        <!-- Lightweight: control + odom + IMU -->
+        <node pkg="rosbag" type="record" name="rosbag_recorder"
+              args="-o $(env HOME)/bags/linefollow_v1 /line/lateral_error /cmd_vel /odom /odom_raw /imu /tf"
+              output="screen"
+              unless="$(arg record_camera)"/>
+        <!-- With camera -->
+        <node pkg="rosbag" type="record" name="rosbag_recorder"
+              args="-o $(env HOME)/bags/linefollow_v1 /line/lateral_error /cmd_vel /odom /odom_raw /imu /tf /csi_cam_0/image_raw/compressed"
+              output="screen"
+              if="$(arg record_camera)"/>
+    </group>
+
+    <node pkg="jetracer"
+          type="PID_linefollow_v1.py"
+          name="line_controller_node"
+          output="screen">
+        <!-- Perception -->
+        <param name="canny_low"       value="$(arg canny_low)"/>
+        <param name="canny_high"      value="$(arg canny_high)"/>
+        <param name="hough_threshold" value="$(arg hough_threshold)"/>
+        <param name="hough_min_len"   value="$(arg hough_min_len)"/>
+        <param name="hough_max_gap"   value="$(arg hough_max_gap)"/>
+        <param name="min_abs_slope"   value="$(arg min_abs_slope)"/>
+        <param name="min_segs"        value="$(arg min_segs)"/>
+        <param name="roi_top"         value="$(arg roi_top)"/>
+        <param name="blur_ksize"      value="$(arg blur_ksize)"/>
+        <!-- Control -->
+        <param name="kp"            value="$(arg kp)"/>
+        <param name="ki"            value="$(arg ki)"/>
+        <param name="kd"            value="$(arg kd)"/>
+        <param name="max_angular"   value="$(arg max_angular)"/>
+        <param name="d_alpha"       value="$(arg d_alpha)"/>
+        <param name="forward_speed" value="$(arg forward_speed)"/>
+        <param name="dt_min"        value="$(arg dt_min)"/>
+        <param name="dt_max"        value="$(arg dt_max)"/>
+        <param name="timeout"       value="$(arg timeout)"/>
+    </node>
+</launch>

@@ -97,6 +97,7 @@ generate_dynamic_reconfigure_options(
   cfg/jetracer.cfg
   cfg/CalibrateLinear.cfg
   cfg/laserFilter.cfg
+  cfg/color.cfg
 )
 
 ###################################

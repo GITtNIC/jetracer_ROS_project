@@ -1,0 +1,49 @@
+<launch>
+    <!--
+        v1 waypoint navigator.
+
+        Run AFTER jetracer.launch is already up. The node expects /odom
+        to be live. Park the car with its rear axle on (0,0) and the
+        chassis pointing along +x BEFORE jetracer.launch starts, so the
+        hard-coded waypoints match the tape grid on the floor.
+
+        Bags land in $HOME/bags/ with timestamped filenames
+        (waypoints_v1_YYYY-MM-DD-HH-MM-SS.bag). Disable with:
+            roslaunch jetracer waypoints_v1.launch record:=false
+    -->
+
+    <!-- Toggle bag recording -->
+    <arg name="record" default="true"/>
+
+    <group if="$(arg record)">
+        <node pkg="rosbag" type="record" name="rosbag_recorder"
+              args="-o $(env HOME)/bags/waypoints_v1 /odom /odom_raw /cmd_vel /imu /tf"
+              output="screen"/>
+    </group>
+
+    <node pkg="jetracer"
+          type="waypoints_v1.py"
+          name="waypoint_nav_node"
+          output="screen">
+
+        <!-- Waypoints (odom frame, metres). Default here = 1 m square. -->
+        <rosparam param="waypoints">
+            [[1.0, 0.0], [1.0, 1.0], [0.0, 1.0], [0.0, 0.0]]
+        </rosparam>
+
+        <!-- Controller gains -->
+        <param name="k_v"           value="0.5" />
+        <param name="k_w"           value="1.5" />
+
+        <!-- Output limits -->
+        <param name="v_max"         value="0.15" />
+        <param name="w_max"         value="0.6"  />
+
+        <!-- Reach threshold (m) -->
+        <param name="reach_thresh"  value="0.30" />
+
+        <!-- Safety -->
+        <param name="odom_timeout"     value="0.5"   />
+        <param name="mission_timeout"  value="180.0" />
+    </node>
+</launch>

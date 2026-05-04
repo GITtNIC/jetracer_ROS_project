@@ -1,0 +1,38 @@
+<launch>
+    <!--
+        Min-turning-radius calibration: drive the JetRacer in an unbounded
+        right circle at full steering lock and record /odom + /cmd_vel + IMU.
+
+        Run:
+            roslaunch jetracer 360_test_right.launch
+            roslaunch jetracer 360_test_right.launch linear_speed:=0.10
+            roslaunch jetracer 360_test_right.launch angular_speed:=-0.8
+            roslaunch jetracer 360_test_right.launch record:=false
+
+        Bags land in $HOME/bags/ with timestamped filenames
+        (360_test_right_YYYY-MM-DD-HH-MM-SS.bag).
+    -->
+
+    <!-- ===== Bag recording ===== -->
+    <arg name="record" default="true"/>
+
+    <!-- ===== Drive ===== -->
+    <arg name="linear_speed"  default="0.15"/>
+    <arg name="angular_speed" default="-1.5"/>
+    <arg name="publish_hz"    default="20"/>
+
+    <group if="$(arg record)">
+        <node pkg="rosbag" type="record" name="rosbag_recorder"
+              args="-o $(env HOME)/bags/360_test_right /cmd_vel /odom /odom_raw /odom_combined /imu /imu_data /tf"
+              output="screen"/>
+    </group>
+
+    <node pkg="jetracer"
+          type="360_test_right.py"
+          name="test_360_right"
+          output="screen">
+        <param name="linear_speed"  value="$(arg linear_speed)"/>
+        <param name="angular_speed" value="$(arg angular_speed)"/>
+        <param name="publish_hz"    value="$(arg publish_hz)"/>
+    </node>
+</launch>
