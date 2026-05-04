@@ -1,0 +1,36 @@
+<launch>
+    <!--
+        Linear-scale calibration: drive straight at constant speed for N seconds.
+
+        Run:
+            roslaunch jetracer straight_test.launch
+            roslaunch jetracer straight_test.launch duration:=10.0
+            roslaunch jetracer straight_test.launch linear_speed:=0.10
+            roslaunch jetracer straight_test.launch record:=false
+
+        Bags land in $HOME/bags/ as straight_test_YYYY-MM-DD-HH-MM-SS.bag.
+
+        After the run, measure the real distance with a tape measure and
+        compare to the /odom delta from the bag.
+    -->
+
+    <arg name="record"        default="true"/>
+    <arg name="linear_speed"  default="0.15"/>
+    <arg name="duration"      default="7.0"/>
+    <arg name="publish_hz"    default="20"/>
+
+    <group if="$(arg record)">
+        <node pkg="rosbag" type="record" name="rosbag_recorder"
+              args="-o $(env HOME)/bags/straight_test /cmd_vel /odom /odom_raw /odom_combined /imu /imu_data /tf"
+              output="screen"/>
+    </group>
+
+    <node pkg="jetracer"
+          type="straight_test.py"
+          name="straight_test"
+          output="screen">
+        <param name="linear_speed" value="$(arg linear_speed)"/>
+        <param name="duration"     value="$(arg duration)"/>
+        <param name="publish_hz"   value="$(arg publish_hz)"/>
+    </node>
+</launch>
